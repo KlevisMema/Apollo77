@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Apollo77.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Apollo77.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    Title="Apollo77"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:components="using:Apollo77.UI.Controls"
+    mc:Ignorable="d">
+
+    <Grid Padding="10">
+
+        <Grid.Background>
+            <AcrylicBrush
+                TintColor="#202020"
+                TintOpacity="1"
+                FallbackColor="#202020" />
+        </Grid.Background>
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+            <components:RunningProcessesInfo x:Name="RunningProcessesInfo" />
+
+            <TextBox x:Name="SearchBox" PlaceholderText="Search processes..." TextChanged="SearchBox_TextChanged" Margin="0,0,0,10" />
+
+            <ScrollView Height="350" ContentOrientation="None">
+
+                <ListBox x:Name="ProcessListBox"
+                         Grid.Row="1"
+                         Background="#33000000"
+                         BorderBrush="#66000000"
+                         BorderThickness="1"
+                         MinWidth="200"
+                         VerticalAlignment="Stretch"
+                         HorizontalAlignment="Stretch">
+
+                    <ListBox.ItemTemplate>
+
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{Binding Icon}" Width="32" Height="32" Margin="0,0,10,0" />
+                                <TextBlock Text="{Binding Name}" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="(ID: " FontSize="16" />
+                                <TextBlock Text="{Binding Id}" FontSize="16" />
+                                <TextBlock Text=")" FontSize="16" />
+                            </StackPanel>
+                        </DataTemplate>
+
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+            </ScrollView>
+
+        </StackPanel>
+
+    </Grid>
+
+</Window>

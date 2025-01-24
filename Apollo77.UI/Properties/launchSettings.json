@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Apollo77.UI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Apollo77.UI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
