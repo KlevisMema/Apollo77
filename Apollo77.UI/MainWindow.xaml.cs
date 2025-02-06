@@ -1,62 +1,121 @@
+using Apollo77.Shared;
+using Apollo77.Shared.Util;
+using Apollo77.UI.ViewModels;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-using Apollo77.Api;
-using Apollo77.Shared;
-
+using System;
 using System.ComponentModel;
-using System.Collections.ObjectModel;
-using Microsoft.UI.Xaml.Data;
-using Apollo77.UI.Controls;
+using System.Threading.Tasks;
+
+using WinRT.Interop;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 
 namespace Apollo77.UI;
 
-public sealed partial class MainWindow : Window
+public sealed partial class MainWindow : Window, INotifyPropertyChanged
 {
-    private readonly IProcessApi _processApi;
+    public MainWindowViewModel ViewModel { get; }
 
-    private ObservableCollection<ProcessInfo> Processes { get; set; } = default!;
-    private ObservableCollection<ProcessInfo> AllProcesses { get; set; } = default!;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-    public MainWindow(IProcessApi processApi)
+    private bool PaneOpenend { get; set; } = true;
+
+    public MainWindow(MainWindowViewModel viewModel)
     {
         this.InitializeComponent();
-        this._processApi = processApi;
-        this.InitializePrivateObjects();
-        this.GetRunninngProcessess();
+        ViewModel = viewModel;
     }
 
-    private void InitializePrivateObjects()
+    private async void AddProcess_Click(object sender, RoutedEventArgs e)
     {
-        Processes = [];
-        AllProcesses = [];
-    }
+        StorageFile file = await PickProcessFileAsync();
 
-    private void GetRunninngProcessess()
-    {
-        var getRunninngProcessessResult = _processApi.GetAllRunningProcessess();
-
-        if (getRunninngProcessessResult.Succsess && getRunninngProcessessResult.Value is not null)
+        if (file != null)
         {
-            AllProcesses = new ObservableCollection<ProcessInfo>(getRunninngProcessessResult.Value);
-            Processes = new ObservableCollection<ProcessInfo>(getRunninngProcessessResult.Value);
-            ProcessListBox.ItemsSource = Processes;
-            RunningProcessesInfo.NumberOfRunningProccesses = AllProcesses.Count;
+            Response<bool> isRunningProcessResult = this.ViewModel.IsRunningProcessByFilePath(file.Path);
+            this.IsRunningProcessResult(isRunningProcessResult);
+        }
+        else
+        {
+            OpenDialog("Cancelled", "No file was selected.");
         }
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        string searchText = SearchBox.Text.ToLower();
+        var searchBox = sender as TextBox;
+        ViewModel.SearchProcesses(searchBox?.Text ?? string.Empty);
+    }
 
-        Processes.Clear();
+    private void TogglePane_Click(object sender, RoutedEventArgs e)
+    {
+        PaneOpenend = !PaneOpenend;
+        OnPropertyChanged(nameof(PaneOpenend));
+    }
 
-        foreach (var process in AllProcesses)
+    private void ProcessListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ProcessListBox.SelectedItem is ProcessInfo selectedProcess)
         {
-            if (process.Name.Contains(searchText, System.StringComparison.CurrentCultureIgnoreCase) || process.Id.ToString().Contains(searchText))
-            {
-                Processes.Add(process);
-            }
+            this.ViewModel.ProcessListBoxSelectionChanged(selectedProcess);
+        }
+    }
+
+    private async void OpenDialog(string title, string content)
+    {
+        ContentDialog dialog = new()
+        {
+            Title = title,
+            Content = content,
+            CloseButtonText = "OK",
+            XamlRoot = this.Content.XamlRoot
+        };
+
+        await dialog.ShowAsync();
+    }
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private async Task<StorageFile> PickProcessFileAsync()
+    {
+        FileOpenPicker picker = new()
+        {
+            SuggestedStartLocation = PickerLocationId.ComputerFolder,
+        };
+
+        picker.FileTypeFilter.Add(".exe");
+
+        InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
+
+        StorageFile file = await picker.PickSingleFileAsync();
+
+        return file;
+    }
+
+    private void IsRunningProcessResult(Response<bool> response)
+    {
+        if (response.Value)
+        {
+            OpenDialog("Success", "Process succsessfully added!");
+            return;
+        }
+
+        if (response.Succsess && !response.Value)
+        {
+            OpenDialog("Fail", "Process is not running!");
+            return;
+        }
+
+        if (!response.Succsess)
+        {
+            OpenDialog("Error", "Something went wrong!");
+            return;
         }
     }
 }

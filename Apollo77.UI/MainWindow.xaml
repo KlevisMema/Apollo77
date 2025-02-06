@@ -6,55 +6,171 @@
     xmlns:local="using:Apollo77.UI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     Title="Apollo77"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:components="using:Apollo77.UI.Controls"
-    mc:Ignorable="d">
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:components="using:Apollo77.UI.Controls" 
+    mc:Ignorable="d"
+    >
 
-    <Grid Padding="10">
+    <SplitView IsPaneOpen="{x:Bind PaneOpenend, Mode=TwoWay}" 
+               x:Name="splitView" 
+               PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
+               OpenPaneLength="350"
+               CompactPaneLength="0" 
+               DisplayMode="CompactInline"
+               Padding="10">
 
-        <Grid.Background>
+        <SplitView.Background>
             <AcrylicBrush
                 TintColor="#202020"
                 TintOpacity="1"
                 FallbackColor="#202020" />
-        </Grid.Background>
+        </SplitView.Background>
 
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border BorderThickness="7"
+                BorderBrush="#303030">
 
-            <components:RunningProcessesInfo x:Name="RunningProcessesInfo" />
+            <Grid Padding="10">
 
-            <TextBox x:Name="SearchBox" PlaceholderText="Search processes..." TextChanged="SearchBox_TextChanged" Margin="0,0,0,10" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-            <ScrollView Height="350" ContentOrientation="None">
+                <StackPanel Orientation="Vertical" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid HorizontalAlignment="Stretch" Margin="0,0,0,10">
 
-                <ListBox x:Name="ProcessListBox"
-                         Grid.Row="1"
-                         Background="#33000000"
-                         BorderBrush="#66000000"
-                         BorderThickness="1"
-                         MinWidth="200"
-                         VerticalAlignment="Stretch"
-                         HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                    <ListBox.ItemTemplate>
+                        <Button Padding="10" Click="TogglePane_Click" Grid.Column="0">
+                            <SymbolIcon Symbol="GlobalNavigationButton"/>
+                        </Button>
 
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding Icon}" Width="32" Height="32" Margin="0,0,10,0" />
-                                <TextBlock Text="{Binding Name}" FontSize="16" Margin="0,0,10,0"/>
-                                <TextBlock Text="(ID: " FontSize="16" />
-                                <TextBlock Text="{Binding Id}" FontSize="16" />
-                                <TextBlock Text=")" FontSize="16" />
-                            </StackPanel>
-                        </DataTemplate>
+                        <components:RunningProcessesInfo x:Name="RunningProcessesInfo" 
+                                                         NumberOfRunningProcesses="{x:Bind ViewModel.NumberOfRunningProcesses, Mode=OneWay}"  Grid.Column="2" />
 
-                    </ListBox.ItemTemplate>
+                    </Grid>
 
-                </ListBox>
+                    <TextBox x:Name="SearchBox" PlaceholderText="Search processes..." TextChanged="SearchBox_TextChanged" Margin="0,0,0,10" />
+                </StackPanel>
 
-            </ScrollView>
+                <ScrollView Grid.Row="1" ContentOrientation="None" VerticalScrollBarVisibility="Auto">
 
-        </StackPanel>
+                    <ListBox x:Name="ProcessListBox"
+                            ItemsSource="{x:Bind ViewModel.Processes, Mode=TwoWay}"
+                            Grid.Row="1"
+                            Background="#33000000"
+                            BorderBrush="#66000000"
+                            BorderThickness="1"
+                            MinWidth="200"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            SelectionChanged="ProcessListBox_SelectionChanged">
 
-    </Grid>
+                        <ListBox.ItemTemplate>
+
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding Icon}" Width="32" Height="32" Margin="0,0,10,0" />
+                                        <TextBlock Text="{Binding Name}" FontSize="16" Margin="0,0,10,0" />
+                                        <TextBlock Text="(ID: " FontSize="16" />
+                                        <TextBlock Text="{Binding Id}" FontSize="16" />
+                                        <TextBlock Text=")" FontSize="16" />
+                                    </StackPanel>
+                                    <TextBlock FontSize="14" Foreground="Gray">
+                                        <Run Text="Memory: " />
+                                        <Run Text="{Binding MemoryUsage}" />
+                                        <Run Text="MB" />
+                                    </TextBlock>
+                                    <TextBlock FontSize="14" Foreground="Gray">
+                                        <Run Text="CPU Time: " />
+                                        <Run Text="{Binding CpuTime}" />
+                                    </TextBlock>
+                                    <TextBlock FontSize="14" Foreground="Gray">
+                                        <Run Text="Threads: " />
+                                        <Run Text="{Binding ThreadsCount}" />
+                                    </TextBlock>
+                                    <TextBlock FontSize="14" Foreground="Gray">
+                                        <Run Text="Start Time: " />
+                                        <Run Text="{Binding StartTime}" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+
+                        </ListBox.ItemTemplate>
+
+                    </ListBox>
+
+                </ScrollView>
+
+            </Grid>
+
+        </Border>
+
+        <SplitView.Pane>
+
+            <Border BorderThickness="7"
+                    BorderBrush="#303030">
+
+                <Border.Background>
+                    <AcrylicBrush TintColor="#202020"
+                                  TintOpacity="0.8"
+                                  FallbackColor="#202020" />
+                </Border.Background>
+
+                <StackPanel Margin="0,10,0,0">
+
+                    <Border CornerRadius="15" 
+                            BorderThickness="1"
+                            Padding="10" 
+                            Margin="10,0,10,0"
+                            BorderBrush="#303030">
+
+                        <TextBlock Text="Actions" 
+                                   Foreground="White" 
+                                   FontSize="18" 
+                                   VerticalAlignment="Center" 
+                                   Grid.Column="0" />
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center" 
+                                Margin="0,10,0,0" 
+                                Spacing="10">
+
+                        <Button HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                MinWidth="150" Width="Auto"
+                                Padding="27">
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Refresh" />
+                            </ToolTipService.ToolTip>
+                            <SymbolIcon Symbol="Refresh"/>
+                        </Button>
+
+                        <Button HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                MinWidth="150" Width="Auto"
+                                Padding="27"
+                                Click="AddProcess_Click">
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Add new process" />
+                            </ToolTipService.ToolTip>
+                            <SymbolIcon Symbol="Add"/>
+                        </Button>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+            </Border>
+
+        </SplitView.Pane>
+
+    </SplitView>
 
 </Window>
