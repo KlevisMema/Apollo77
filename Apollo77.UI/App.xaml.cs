@@ -12,7 +12,7 @@ namespace Apollo77.UI;
 
 public partial class App : Application, IDisposable
 {
-    private Window? m_window;
+    public Window? m_window;
     private readonly IHost _host;
 
     public App()

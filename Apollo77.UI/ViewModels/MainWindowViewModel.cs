@@ -7,6 +7,8 @@ using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+
+using Apollo77.UI.Services;
 using Apollo77.Api.ApiService;
 
 namespace Apollo77.UI.ViewModels;
@@ -14,6 +16,7 @@ namespace Apollo77.UI.ViewModels;
 public class MainWindowViewModel : INotifyPropertyChanged
 {
     public int NumberOfRunningProcesses;
+    public readonly DialogService _dialogService;
     public event PropertyChangedEventHandler? PropertyChanged;
     public ObservableCollection<ProcessInfo> Processes { get; set; } = default!;
     public ObservableCollection<ProcessInfo> AllProcesses { get; set; } = default!;
@@ -21,10 +24,11 @@ public class MainWindowViewModel : INotifyPropertyChanged
     private readonly IProcessApi _processApi;
     private readonly ILogger<MainWindowViewModel> _logger;
 
-    public MainWindowViewModel(IProcessApi processApi, ILogger<MainWindowViewModel> logger)
+    public MainWindowViewModel(IProcessApi processApi, ILogger<MainWindowViewModel> logger, DialogService dialogService)
     {
         _processApi = processApi;
         _logger = logger;
+        _dialogService = dialogService;
         InitializePrivateObjects();
         GetRunningProcesses();
     }
@@ -70,25 +74,42 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     public void ProcessListBoxSelectionChanged(ProcessInfo selectedProcess)
     {
-        Response<bool> isRunningProcessResult = _processApi.IsProcessRunningById(selectedProcess.Id);
+        Response<bool> isRunningProcessResult = _processApi.IsRunningProcessById(selectedProcess.Id);
 
         if (!isRunningProcessResult.Succsess)
         {
-            // display the dialog with the error id 
+            _dialogService.ShowDialogAsync(title: "Something went wrong!", message: $"Error id: {isRunningProcessResult.ErrorId!}");
             return;
         }
 
         if (isRunningProcessResult.Succsess && !isRunningProcessResult.Value)
         {
-            // display the dialog saying process not running 
+            _dialogService.ShowDialogAsync(title: "Fail!", message: isRunningProcessResult.Message!);
             return;
         }
 
-
+        OpenHanderToValidSelectedProcess(selectedProcess.Id);
     }
 
     public void OnPropertyChanged(string propertyName)
     {
         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private void OpenHanderToValidSelectedProcess(int processId)
+    {
+        Response<bool> openHandlerToProcessResult = _processApi.OpenHandlerToProcess(processId);
+
+        if (!openHandlerToProcessResult.Succsess)
+        {
+            _dialogService.ShowDialogAsync(title: "Something went wrong!", message: $"Error id: {openHandlerToProcessResult.ErrorId!}");
+            return;
+        }
+
+        if (openHandlerToProcessResult.Succsess && !openHandlerToProcessResult.Value)
+        {
+            _dialogService.ShowDialogAsync(title: "Fail!", message: openHandlerToProcessResult.Message!);
+            return;
+        }
     }
 }

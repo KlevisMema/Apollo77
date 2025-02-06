@@ -7,7 +7,8 @@ namespace Apollo77.Api.ApiService;
 
 public interface IProcessApi
 {
-    Response<bool> IsProcessRunningById(int processId);
+    Response<bool> OpenHandlerToProcess(int processId);
+    Response<bool> IsRunningProcessById(int processId);
     Response<List<ProcessInfo>> GetAllRunningProcessess();
     Response<bool> IsRunningProcessByFilePath(string exePath);
 }

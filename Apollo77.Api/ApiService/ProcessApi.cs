@@ -18,8 +18,13 @@ internal class ProcessApi(IProcessProvider _processesFinder) : IProcessApi
         return _processesFinder.IsRunningProcessByFilePath(exePath);
     }
 
-    public Response<bool> IsProcessRunningById(int processId)
+    public Response<bool> IsRunningProcessById(int processId)
     {
-        return _processesFinder.IsProcessRunningById(processId);
+        return _processesFinder.IsRunningProcessById(processId);
+    }
+    
+    public Response<bool> OpenHandlerToProcess(int processId)
+    {
+        return _processesFinder.OpenHandlerToProcess(processId);
     }
 }

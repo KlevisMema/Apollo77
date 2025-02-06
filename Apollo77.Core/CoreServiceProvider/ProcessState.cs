@@ -1,31 +1,28 @@
-﻿using Apollo77.Core.Constants;
-using Apollo77.Core.Util;
+﻿using System;
 
 namespace Apollo77.Core.CoreServiceProvider;
 
 internal class ProcessState
 {
-    private nint processHandle;
+    private IntPtr processHandle;
     private int processId;
 
-    public bool AttachToProcess(int pid)
+    public void SetProcessHandleProcessIdPtr(IntPtr processIdPtr)
     {
-        processHandle = ExternalDll.OpenProcess(ProcessActions.PROCESS_ALL_ACCESS, false, pid);
+        this.processHandle = processIdPtr;
+    }
 
-        if (processHandle == nint.Zero)
-        {
-            return false;
-        }
-
-        processId = pid;
-        return true;
+    public void SetProcessId(int processId)
+    {
+        this.processId = processId;
     }
 
     public void Detach()
     {
-        processHandle = nint.Zero;
+        processHandle = IntPtr.Zero;
         processId = 0;
     }
 
-    public nint GetProcessHandle() => processHandle;
+    public IntPtr GetProcessHandle() => processHandle;
+    public IntPtr GetProcessId() => processId;
 }

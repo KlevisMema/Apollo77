@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Apollo77.Api;
 using Apollo77.UI.ViewModels;
+using Apollo77.UI.Services;
 
 namespace Apollo77.UI.Helpers;
 
@@ -39,6 +40,7 @@ internal static class StartupHelper
         });
 
         services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<DialogService>();
         services.AddApiServices();
     }
 }

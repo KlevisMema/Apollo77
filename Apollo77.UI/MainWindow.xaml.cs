@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 
 using WinRT.Interop;
+
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
@@ -64,17 +65,9 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private async void OpenDialog(string title, string content)
+    private void OpenDialog(string title, string content)
     {
-        ContentDialog dialog = new()
-        {
-            Title = title,
-            Content = content,
-            CloseButtonText = "OK",
-            XamlRoot = this.Content.XamlRoot
-        };
-
-        await dialog.ShowAsync();
+        ViewModel._dialogService.ShowDialogAsync(title, content);
     }
 
     private void OnPropertyChanged(string propertyName)

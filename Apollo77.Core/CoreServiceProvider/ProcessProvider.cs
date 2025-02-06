@@ -17,7 +17,7 @@ using Apollo77.Core.Util;
 
 namespace Apollo77.Core.CoreServiceProvider;
 
-public class ProcessProvider(ILogger<ProcessProvider> _logger) : IProcessProvider
+internal class ProcessProvider(ILogger<ProcessProvider> _logger, ProcessState _processState) : IProcessProvider
 {
     public Response<List<ProcessInfo>> GetAllProcesses()
     {
@@ -45,9 +45,9 @@ public class ProcessProvider(ILogger<ProcessProvider> _logger) : IProcessProvide
             }
             catch (Exception ex)
             {
-                string guid = GenerateGuid.New();
+                string exceptionId = GenerateGuid.New();
 
-                _logger.LogError(message: ErrorMessages.GenericExceptionMessage, [ex, guid]);
+                _logger.LogError(message: ErrorMessages.GenericExceptionMessage, [ex, exceptionId]);
 
                 continue;
             }
@@ -87,15 +87,15 @@ public class ProcessProvider(ILogger<ProcessProvider> _logger) : IProcessProvide
         }
         catch (Exception ex)
         {
-            string guid = GenerateGuid.New();
+            string exceptionId = GenerateGuid.New();
 
-            _logger.LogError(message: ErrorMessages.GenericExceptionMessage, [ex, guid]);
+            _logger.LogError(message: ErrorMessages.GenericExceptionMessage, [ex, exceptionId]);
 
-            return Response<BitmapImage?>.SetResponse(null, false, null, guid);
+            return Response<BitmapImage?>.SetResponse(null, false, null, exceptionId);
         }
     }
 
-    public Response<bool> IsProcessRunningById(int processId)
+    public Response<bool> IsRunningProcessById(int processId)
     {
         try
         {
@@ -110,15 +110,15 @@ public class ProcessProvider(ILogger<ProcessProvider> _logger) : IProcessProvide
 
             ExternalDll.CloseHandle(hProcess);
 
-            return Response<bool>.SetResponse(true, true, "Process is running", null);
+            return Response<bool>.SetResponse(true, true, null, null);
         }
         catch (Exception ex)
         {
-            string guid = GenerateGuid.New();
+            string exceptionId = GenerateGuid.New();
 
-            _logger.LogError(message: ErrorMessages.GenericExceptionMessage, [ex, guid]);
+            _logger.LogError(message: ErrorMessages.GenericExceptionMessage, [ex, exceptionId]);
 
-            return Response<bool>.SetResponse(false, false, null, guid);
+            return Response<bool>.SetResponse(false, false, null, exceptionId);
         }
     }
 
@@ -169,6 +169,32 @@ public class ProcessProvider(ILogger<ProcessProvider> _logger) : IProcessProvide
         }
 
         return Response<bool>.SetResponse(false, true, null, exceptionId);
+    }
+
+    public Response<bool> OpenHandlerToProcess(int processId)
+    {
+        try
+        {
+            IntPtr openedProcessIdPtr = ExternalDll.OpenProcess(ProcessActions.PROCESS_ALL_ACCESS, false, processId);
+
+            if (openedProcessIdPtr == IntPtr.Zero)
+            {
+                return Response<bool>.SetResponse(false, true, "Process is not running", null);
+            }
+
+            _processState.SetProcessHandleProcessIdPtr(openedProcessIdPtr);
+            _processState.SetProcessId(processId);
+
+            return Response<bool>.SetResponse(true, true, "Succsessfully attached to the running process", null);
+        }
+        catch (Exception ex)
+        {
+            string exceptionId = GenerateGuid.New();
+
+            _logger.LogError(message: ErrorMessages.GenericExceptionMessage, [ex, exceptionId]);
+
+            return Response<bool>.SetResponse(false, true, null, exceptionId);
+        }
     }
 
     private static List<ProcessInfo> OrderByIcon(List<ProcessInfo> processInfos)
