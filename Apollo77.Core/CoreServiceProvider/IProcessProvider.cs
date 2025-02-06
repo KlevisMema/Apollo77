@@ -6,10 +6,12 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using System.Diagnostics;
 using System.Collections.Generic;
 
-namespace Apollo77.CORE;
+namespace Apollo77.Core.CoreServiceProvider;
 
-public interface IProcessesFinder
+public interface IProcessProvider
 {
     Response<List<ProcessInfo>> GetAllProcesses();
+    Response<bool> IsProcessRunningById(int processId);
     Response<BitmapImage?> GetProcessIcon(Process process);
+    Response<bool> IsRunningProcessByFilePath(string exePath);
 }

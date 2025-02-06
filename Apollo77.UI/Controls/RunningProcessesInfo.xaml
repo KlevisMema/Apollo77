@@ -9,7 +9,6 @@
     mc:Ignorable="d">
     <Border CornerRadius="10" 
             Padding="10" 
-            Margin="0,0,0,10"
             BorderThickness="1"
             BorderBrush="#303030">
         <Border.Background>
@@ -31,7 +30,7 @@
                        VerticalAlignment="Center" 
                        Grid.Column="0" />
 
-            <TextBlock Text="{x:Bind NumberOfRunningProccesses, Mode=OneWay}" 
+            <TextBlock Text="{x:Bind NumberOfRunningProcesses, Mode=OneWay}" 
                        Foreground="White" 
                        FontSize="18" 
                        VerticalAlignment="Center" 
