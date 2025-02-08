@@ -19,7 +19,7 @@ namespace Apollo77.Core.CoreServiceProvider;
 
 internal class ProcessProvider(ILogger<ProcessProvider> _logger, ProcessState _processState) : IProcessProvider
 {
-    public Response<List<ProcessInfo>> GetAllProcesses()
+    public Response<IEnumerable<ProcessInfo>> GetAllProcesses()
     {
         List<ProcessInfo> processList = [];
 
@@ -53,9 +53,9 @@ internal class ProcessProvider(ILogger<ProcessProvider> _logger, ProcessState _p
             }
         }
 
-        processList = OrderByIcon(processList);
+        processList = OrderByIcon(processList).ToList();
 
-        return Response<List<ProcessInfo>>.SetResponse(processList, true, null, null);
+        return Response<IEnumerable<ProcessInfo>>.SetResponse(processList, true, null, null);
     }
 
     public Response<BitmapImage?> GetProcessIcon(Process process)
@@ -197,7 +197,51 @@ internal class ProcessProvider(ILogger<ProcessProvider> _logger, ProcessState _p
         }
     }
 
-    private static List<ProcessInfo> OrderByIcon(List<ProcessInfo> processInfos)
+    public Response<IEnumerable<ProcessInfo>> GetRunningApplications()
+    {
+        try
+        {
+            List<ProcessInfo> runningApps = [];
+
+            foreach (Process process in Process.GetProcesses())
+            {
+                try
+                {
+                    if (process.HasExited)
+                    {
+                        continue;
+                    }
+
+                    if (process.MainWindowHandle != IntPtr.Zero)
+                    {
+                        runningApps.Add(new ProcessInfo
+                        {
+                            Name = process.ProcessName,
+                            Id = process.Id,
+                            Icon = GetProcessIcon(process).Value,
+                            MemoryUsage = (process.WorkingSet64 / 1024 / 1024).ToString(),
+                            CpuTime = process.TotalProcessorTime.ToString("g"),
+                            StartTime = process.StartTime.ToString("g"),
+                            ThreadsCount = process.Threads.Count.ToString(),
+                        });
+                    }
+                }
+                catch { /* Ignored access denied */ }
+            }
+
+            return Response<IEnumerable<ProcessInfo>>.SetResponse(runningApps, true, null, null);
+        }
+        catch (Exception ex)
+        {
+            string exceptionId = GenerateGuid.New();
+
+            _logger.LogError(message: ErrorMessages.GenericExceptionMessage, [ex, exceptionId]);
+
+            return Response<IEnumerable<ProcessInfo>>.SetResponse(null, true, null, exceptionId);
+        }
+    }
+
+    private static IEnumerable<ProcessInfo> OrderByIcon(IEnumerable<ProcessInfo> processInfos)
     {
         return [.. processInfos.OrderByDescending(x => x.Icon is not null)];
     }

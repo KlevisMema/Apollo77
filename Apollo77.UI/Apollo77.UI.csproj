@@ -13,8 +13,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Controls\ProcessesViewControl.xaml" />
     <None Remove="Controls\RunningProcessesInfo.xaml" />
-    <None Remove="CustomColors\CustomColors.xaml" />
+    <None Remove="Pages\ProcessListPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,12 +54,17 @@
     <ProjectReference Include="..\Apollo77.Shared\Apollo77.Shared.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="CustomColors\CustomColors.xaml">
+    <Page Update="Controls\ProcessesViewControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Controls\RunningProcessesInfo.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\ProcessListPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

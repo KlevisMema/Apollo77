@@ -10,9 +10,10 @@ namespace Apollo77.Core.CoreServiceProvider;
 
 public interface IProcessProvider
 {
-    Response<List<ProcessInfo>> GetAllProcesses();
     Response<bool> OpenHandlerToProcess(int processId);
     Response<bool> IsRunningProcessById(int processId);
+    Response<IEnumerable<ProcessInfo>> GetAllProcesses();
     Response<BitmapImage?> GetProcessIcon(Process process);
     Response<bool> IsRunningProcessByFilePath(string exePath);
+    Response<IEnumerable<ProcessInfo>> GetRunningApplications();
 }

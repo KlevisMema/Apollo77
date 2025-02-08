@@ -9,6 +9,7 @@ public interface IProcessApi
 {
     Response<bool> OpenHandlerToProcess(int processId);
     Response<bool> IsRunningProcessById(int processId);
-    Response<List<ProcessInfo>> GetAllRunningProcessess();
     Response<bool> IsRunningProcessByFilePath(string exePath);
+    Response<IEnumerable<ProcessInfo>> GetRunningApplications();
+    Response<IEnumerable<ProcessInfo>> GetAllRunningProcessess();
 }

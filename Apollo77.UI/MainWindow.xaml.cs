@@ -1,4 +1,5 @@
-using Apollo77.Shared;
+using Apollo77.UI.Pages;
+using Apollo77.UI.Enums;
 using Apollo77.Shared.Util;
 using Apollo77.UI.ViewModels;
 
@@ -13,10 +14,11 @@ using WinRT.Interop;
 
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Apollo77.UI;
 
-public sealed partial class MainWindow : Window, INotifyPropertyChanged
+internal sealed partial class MainWindow : Window, INotifyPropertyChanged
 {
     public MainWindowViewModel ViewModel { get; }
 
@@ -28,6 +30,8 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
     {
         this.InitializeComponent();
         ViewModel = viewModel;
+        SelectorBar_SelectionChanged(SelectorBar, null!);
+        RunningProcessesInfo.TextBlockName = "All Running Processes";
     }
 
     private async void AddProcess_Click(object sender, RoutedEventArgs e)
@@ -41,33 +45,25 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
         }
         else
         {
-            OpenDialog("Cancelled", "No file was selected.");
+            this.OpenDialog("Cancelled", "No file was selected.");
         }
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        var searchBox = sender as TextBox;
-        ViewModel.SearchProcesses(searchBox?.Text ?? string.Empty);
+        TextBox? searchBox = sender as TextBox;
+        this.ViewModel.SearchProcesses(searchBox?.Text ?? string.Empty);
     }
 
     private void TogglePane_Click(object sender, RoutedEventArgs e)
     {
-        PaneOpenend = !PaneOpenend;
-        OnPropertyChanged(nameof(PaneOpenend));
-    }
-
-    private void ProcessListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (ProcessListBox.SelectedItem is ProcessInfo selectedProcess)
-        {
-            this.ViewModel.ProcessListBoxSelectionChanged(selectedProcess);
-        }
+        this.PaneOpenend = !this.PaneOpenend;
+        this.OnPropertyChanged(nameof(this.PaneOpenend));
     }
 
     private void OpenDialog(string title, string content)
     {
-        ViewModel._dialogService.ShowDialogAsync(title, content);
+        this.ViewModel._dialogService.ShowDialogAsync(title, content);
     }
 
     private void OnPropertyChanged(string propertyName)
@@ -95,20 +91,63 @@ public sealed partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (response.Value)
         {
-            OpenDialog("Success", "Process succsessfully added!");
+            this.OpenDialog("Success", "Process succsessfully added!");
             return;
         }
 
         if (response.Succsess && !response.Value)
         {
-            OpenDialog("Fail", "Process is not running!");
+            this.OpenDialog("Fail", "Process is not running!");
             return;
         }
 
         if (!response.Succsess)
         {
-            OpenDialog("Error", "Something went wrong!");
+            this.OpenDialog("Error", "Something went wrong!");
             return;
+        }
+    }
+
+    private void SelectorBar_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        FrameNavigationOptions navOptions = new();
+
+        if (args is not null)
+        {
+            navOptions.TransitionInfoOverride = args.RecommendedNavigationTransitionInfo;
+        }
+
+        if (sender.PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+        {
+            navOptions.IsNavigationStackEnabled = false;
+        }
+
+        Type pageType = typeof(ProcessListPage);
+
+        if (args is not null &&
+            args.SelectedItem is NavigationViewItem selectedItem &&
+            selectedItem.Tag is ProcessCategory category
+        )
+        {
+            switch (category)
+            {
+                case ProcessCategory.RunningProcesses:
+                    RunningProcessesInfo.TextBlockName = "All Running Processes";
+                    RunningProcessesInfo.NumberOfRunningProcesses = ViewModel.GetNumberOfAllRunningProcesses();
+                    break;
+                case ProcessCategory.Applications:
+                    RunningProcessesInfo.TextBlockName = "Applications";
+                    RunningProcessesInfo.NumberOfRunningProcesses = ViewModel.GetNumberOfApplications();
+                    break;
+                default:
+                    RunningProcessesInfo.TextBlockName = "All Running Processes";
+                    RunningProcessesInfo.NumberOfRunningProcesses = ViewModel.GetNumberOfAllRunningProcesses();
+                    break;
+            }
+
+            this.RunningProcessesInfo.OnPropertyChanged(nameof(RunningProcessesInfo.TextBlockName));
+            this.RunningProcessesInfo.OnPropertyChanged(nameof(RunningProcessesInfo.NumberOfRunningProcesses));
+            this.ContentFrame.NavigateToType(pageType, category, navOptions);
         }
     }
 }

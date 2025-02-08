@@ -8,13 +8,13 @@
     Title="Apollo77"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:components="using:Apollo77.UI.Controls" 
-    mc:Ignorable="d"
-    >
+    xmlns:enum="using:Apollo77.UI.Enums" 
+    mc:Ignorable="d">
 
     <SplitView IsPaneOpen="{x:Bind PaneOpenend, Mode=TwoWay}" 
                x:Name="splitView" 
                PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
-               OpenPaneLength="350"
+               OpenPaneLength="250"
                CompactPaneLength="0" 
                DisplayMode="CompactInline"
                Padding="10">
@@ -36,75 +36,87 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <StackPanel Orientation="Vertical" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    <Grid HorizontalAlignment="Stretch" Margin="0,0,0,10">
+                <StackPanel Orientation="Vertical">
+
+                    <StackPanel Orientation="Vertical" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch" Margin="0,0,0,10">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button Padding="10" Click="TogglePane_Click" Grid.Column="0">
+                                <SymbolIcon Symbol="GlobalNavigationButton"/>
+                            </Button>
+
+                            <components:RunningProcessesInfo x:Name="RunningProcessesInfo"  Grid.Column="2" />
+
+                        </Grid>
+
+                        <TextBox x:Name="SearchBox" PlaceholderText="Search processes..." TextChanged="SearchBox_TextChanged" Margin="0,0,0,0" />
+                    </StackPanel>
+
+                    <Grid>
 
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto" />
-                            <ColumnDefinition Width="10" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
 
-                        <Button Padding="10" Click="TogglePane_Click" Grid.Column="0">
-                            <SymbolIcon Symbol="GlobalNavigationButton"/>
-                        </Button>
+                        <NavigationView x:Name="SelectorBar" 
+                                    SelectionChanged="SelectorBar_SelectionChanged" 
+                                    PaneDisplayMode="Top" 
+                                    SelectionFollowsFocus="Enabled"
+                                    IsBackButtonVisible="Collapsed"
+                                    IsSettingsVisible="False"
+                                    Grid.Column="0">
+                            <NavigationView.MenuItems>
+                                <NavigationViewItem x:Name="RunningProcessesTab" Tag="{x:Bind enum:ProcessCategory.RunningProcesses}"  ToolTipService.ToolTip="Running Processes" IsSelected="True" >
+                                    <NavigationViewItem.Icon >
+                                        <SymbolIcon Symbol="NewWindow" />
+                                    </NavigationViewItem.Icon>
+                                    <NavigationViewItem.InfoBadge>
+                                        <InfoBadge Style="{StaticResource SuccessValueInfoBadgeStyle}" x:Name="infoBadge1" Value="{x:Bind ViewModel.GetNumberOfAllRunningProcesses()}" FontWeight="Light" Margin="-7, 0, 0, 0"/>
+                                    </NavigationViewItem.InfoBadge>
+                                </NavigationViewItem>
+                                <NavigationViewItem  x:Name="ApplicationsTab" Tag="{x:Bind enum:ProcessCategory.Applications}"  ToolTipService.ToolTip="Applications" Icon="AllApps" >
+                                    <NavigationViewItem.InfoBadge>
+                                        <InfoBadge Style="{StaticResource SuccessValueInfoBadgeStyle}" x:Name="infoBadge2" Value="{x:Bind ViewModel.GetNumberOfApplications()}" FontWeight="Light" />
+                                    </NavigationViewItem.InfoBadge>
+                                </NavigationViewItem>
+                            </NavigationView.MenuItems>
 
-                        <components:RunningProcessesInfo x:Name="RunningProcessesInfo" 
-                                                         NumberOfRunningProcesses="{x:Bind ViewModel.NumberOfRunningProcesses, Mode=OneWay}"  Grid.Column="2" />
+                        </NavigationView>
+
+                        <CommandBar Grid.Column="1" Background="Transparent" IsOpen="False">
+                            <CommandBar.SecondaryCommands>
+                                <AppBarButton Icon="Sort" Label="Sort by Memory">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control" Key="M"/>
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+                                <AppBarButton Icon="Sort" Label="Sort by Threads">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control" Key="T" />
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+                                <AppBarButton Icon="Sort" Label="Sort by Icon">
+                                    <AppBarButton.KeyboardAccelerators>
+                                        <KeyboardAccelerator Modifiers="Control" Key="I" />
+                                    </AppBarButton.KeyboardAccelerators>
+                                </AppBarButton>
+                            </CommandBar.SecondaryCommands>
+
+                        </CommandBar>
 
                     </Grid>
 
-                    <TextBox x:Name="SearchBox" PlaceholderText="Search processes..." TextChanged="SearchBox_TextChanged" Margin="0,0,0,10" />
                 </StackPanel>
 
-                <ScrollView Grid.Row="1" ContentOrientation="None" VerticalScrollBarVisibility="Auto">
-
-                    <ListBox x:Name="ProcessListBox"
-                            ItemsSource="{x:Bind ViewModel.Processes, Mode=TwoWay}"
-                            Grid.Row="1"
-                            Background="#33000000"
-                            BorderBrush="#66000000"
-                            BorderThickness="1"
-                            MinWidth="200"
-                            VerticalAlignment="Stretch"
-                            HorizontalAlignment="Stretch"
-                            SelectionChanged="ProcessListBox_SelectionChanged">
-
-                        <ListBox.ItemTemplate>
-
-                            <DataTemplate>
-                                <StackPanel Orientation="Vertical" Margin="0,0,0,10">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="{Binding Icon}" Width="32" Height="32" Margin="0,0,10,0" />
-                                        <TextBlock Text="{Binding Name}" FontSize="16" Margin="0,0,10,0" />
-                                        <TextBlock Text="(ID: " FontSize="16" />
-                                        <TextBlock Text="{Binding Id}" FontSize="16" />
-                                        <TextBlock Text=")" FontSize="16" />
-                                    </StackPanel>
-                                    <TextBlock FontSize="14" Foreground="Gray">
-                                        <Run Text="Memory: " />
-                                        <Run Text="{Binding MemoryUsage}" />
-                                        <Run Text="MB" />
-                                    </TextBlock>
-                                    <TextBlock FontSize="14" Foreground="Gray">
-                                        <Run Text="CPU Time: " />
-                                        <Run Text="{Binding CpuTime}" />
-                                    </TextBlock>
-                                    <TextBlock FontSize="14" Foreground="Gray">
-                                        <Run Text="Threads: " />
-                                        <Run Text="{Binding ThreadsCount}" />
-                                    </TextBlock>
-                                    <TextBlock FontSize="14" Foreground="Gray">
-                                        <Run Text="Start Time: " />
-                                        <Run Text="{Binding StartTime}" />
-                                    </TextBlock>
-                                </StackPanel>
-                            </DataTemplate>
-
-                        </ListBox.ItemTemplate>
-
-                    </ListBox>
-
+                <ScrollView Grid.Row="1" ContentOrientation="None" VerticalScrollBarVisibility="Auto" Height="auto">
+                    <Frame x:Name="ContentFrame" IsNavigationStackEnabled="True" />
                 </ScrollView>
 
             </Grid>
@@ -144,8 +156,8 @@
 
                         <Button HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                MinWidth="150" Width="Auto"
-                                Padding="27">
+                                MinWidth="100" Width="Auto"
+                                Padding="20">
                             <ToolTipService.ToolTip>
                                 <ToolTip Content="Refresh" />
                             </ToolTipService.ToolTip>
@@ -154,8 +166,8 @@
 
                         <Button HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                MinWidth="150" Width="Auto"
-                                Padding="27"
+                                MinWidth="100" Width="Auto"
+                                Padding="20"
                                 Click="AddProcess_Click">
                             <ToolTipService.ToolTip>
                                 <ToolTip Content="Add new process" />

@@ -4,16 +4,12 @@ using Microsoft.UI.Xaml;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
-using Serilog;
-
-using System;
-
 namespace Apollo77.UI;
 
-public partial class App : Application, IDisposable
+public partial class App : Application
 {
     public Window? m_window;
-    private readonly IHost _host;
+    public readonly IHost _host;
 
     public App()
     {
@@ -32,11 +28,5 @@ public partial class App : Application, IDisposable
     {
         m_window = _host.Services.GetRequiredService<MainWindow>();
         m_window.Activate();
-    }
-
-    public void Dispose()
-    {
-        _host.Dispose();
-        Log.CloseAndFlush();
     }
 }

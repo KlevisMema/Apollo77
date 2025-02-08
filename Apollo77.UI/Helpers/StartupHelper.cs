@@ -39,8 +39,10 @@ internal static class StartupHelper
             builder.AddSerilog();
         });
 
-        services.AddTransient<MainWindowViewModel>();
+        services.AddSingleton<AppState>();
         services.AddTransient<DialogService>();
+        services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<ProcessesViewControlViewModel>();
         services.AddApiServices();
     }
 }

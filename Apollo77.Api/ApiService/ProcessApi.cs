@@ -8,7 +8,7 @@ namespace Apollo77.Api.ApiService;
 
 internal class ProcessApi(IProcessProvider _processesFinder) : IProcessApi
 {
-    public Response<List<ProcessInfo>> GetAllRunningProcessess()
+    public Response<IEnumerable<ProcessInfo>> GetAllRunningProcessess()
     {
         return _processesFinder.GetAllProcesses();
     }
@@ -26,5 +26,10 @@ internal class ProcessApi(IProcessProvider _processesFinder) : IProcessApi
     public Response<bool> OpenHandlerToProcess(int processId)
     {
         return _processesFinder.OpenHandlerToProcess(processId);
+    }
+    
+    public Response<IEnumerable<ProcessInfo>> GetRunningApplications()
+    {
+        return _processesFinder.GetRunningApplications();
     }
 }

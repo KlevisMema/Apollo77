@@ -1,6 +1,4 @@
-﻿using System;
-
-using Microsoft.UI.Xaml.Media.Imaging;
+﻿using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Apollo77.Shared;
 
